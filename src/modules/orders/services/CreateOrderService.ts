@@ -56,12 +56,7 @@ class CreateOrderService {
     }
 
     const findProductWithNoQuantityAvaliable = products.filter(product => {
-      const actualProduct = existentProducts.filter(p => {
-        if (p.id === product.id) {
-          return p.quantity;
-        }
-        return undefined;
-      });
+      const actualProduct = existentProducts.filter(p => p.id === product.id);
       if (
         actualProduct.length &&
         actualProduct[0].quantity < product.quantity
@@ -73,11 +68,11 @@ class CreateOrderService {
     });
 
     if (findProductWithNoQuantityAvaliable.length) {
-      throw new AppError(
-        `The following products does not have sufficient quantity ${String(
-          findProductWithNoQuantityAvaliable,
-        )}`,
-      );
+      const errorMessage = `The following products does not have sufficient quantity ${findProductWithNoQuantityAvaliable.map(
+        product => product.id,
+      )}`;
+
+      throw new AppError(errorMessage);
     }
 
     const serializedProducts = products.map(product => ({

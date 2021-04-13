@@ -3,6 +3,7 @@ import { getRepository, Repository, In } from 'typeorm';
 import IProductsRepository from '@modules/products/repositories/IProductsRepository';
 import ICreateProductDTO from '@modules/products/dtos/ICreateProductDTO';
 import IUpdateProductsQuantityDTO from '@modules/products/dtos/IUpdateProductsQuantityDTO';
+import AppError from '@shared/errors/AppError';
 import Product from '../entities/Product';
 
 interface IFindProducts {
@@ -52,6 +53,17 @@ class ProductsRepository implements IProductsRepository {
   public async updateQuantity(
     products: IUpdateProductsQuantityDTO[],
   ): Promise<Product[]> {
+    products.forEach(async product => {
+      const findProduct = await this.ormRepository.findOne({
+        where: { order_products: product },
+      });
+
+      if (!findProduct) {
+        throw new AppError('product not find');
+      }
+
+      findProduct.quantity = product.quantity;
+    });
     return this.ormRepository.save(products);
   }
 }
